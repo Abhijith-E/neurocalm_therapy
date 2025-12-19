@@ -1,0 +1,11 @@
+flask
+torch
+torchvision
+Pillow
+joblib
+opencv-python
+mediapipe
+numpy
+pandas
+scikit-learn
+werkzeug

@@ -1,0 +1,68 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(120deg, #89f7fe, #66a6ff); /* Light blue gradient */
+    color: #333;
+}
+
+.container {
+    max-width: 700px;
+    margin: 60px auto;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: #004aad;
+    margin-bottom: 20px;
+}
+
+button, .stButton>button {
+    background-color: #004aad !important;
+    color: white !important;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+button:hover, .stButton>button:hover {
+    background-color: #003080 !important;
+}
+.logo {
+    width: 100px;
+    height: auto;
+    display: block;
+    margin: 0 auto 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.logo {
+    animation: fadeIn 1s ease-in;
+}
+
+.module-btn {
+  width: 100%;                 /* Makes it responsive inside column */
+  height: 160px;               /* Fixed height for uniformity */
+  object-fit: cover;           /* Crop and fill without distortion */
+  border-radius: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 4px solid transparent;
+}
+
+.module-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+  border-color: #4a00e0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}

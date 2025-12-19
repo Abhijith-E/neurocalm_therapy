@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Typing Analysis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap & Font Awesome -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(to right, #dfe9f3, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      padding: 40px;
+      margin-top: 60px;
+      position: relative;
+    }
+
+    h2 {
+      color: #4a00e0;
+      font-weight: bold;
+    }
+
+    .btn-primary {
+      background-color: #4a00e0;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #3500b4;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+
+    textarea {
+      resize: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Back Button -->
+  <a href="/dashboard" class="btn btn-outline-secondary back-button">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+  </a>
+
+  <h2 class="text-center mb-4"><i class="fas fa-keyboard"></i> Typing Pattern Analysis</h2>
+
+  <div class="mb-3">
+    <label class="form-label">📜 Reference Text:</label>
+    <div id="reference" class="p-3 border rounded bg-light">
+      The quick brown fox jumps over the lazy dog.
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label for="typed" class="form-label">✍️ Type the above text:</label>
+    <textarea id="typed" class="form-control" rows="4" onkeydown="captureLatency(event)" required></textarea>
+  </div>
+
+  <button onclick="submitTypingData()" class="btn btn-primary w-100 mt-3">🔍 Analyze Typing</button>
+
+  <div class="alert alert-info mt-4 d-none" id="resultBox">
+    <h5><i class="fas fa-chart-line"></i> Result:</h5>
+    <p id="result">Result: </p>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  let keyPressTimes = {};
+  let holdTimes = [];
+  let flightTimes1 = [];
+  let flightTimes2 = [];
+  let lastPressTime = null;
+  let lastReleaseTime = null;
+
+  let leftKeys = "qwertasdfgzxcvb".split("");
+  let rightKeys = "yuiophjklnm".split("");
+  let leftCount = 0, rightCount = 0, spaceCount = 0, totalKeys = 0;
+  let startTime = null;
+
+  document.getElementById("typed").addEventListener("keydown", function(e) {
+    const now = performance.now();
+    if (!startTime) startTime = now;
+
+    keyPressTimes[e.code] = now;
+
+    // Flight Time 1
+    if (lastPressTime !== null) {
+      flightTimes1.push(now - lastPressTime);
+    }
+    lastPressTime = now;
+
+    // Count keys
+    totalKeys++;
+    if (leftKeys.includes(e.key.toLowerCase())) leftCount++;
+    else if (rightKeys.includes(e.key.toLowerCase())) rightCount++;
+    else if (e.key === " ") spaceCount++;
+  });
+
+  document.getElementById("typed").addEventListener("keyup", function(e) {
+    const now = performance.now();
+    if (keyPressTimes[e.code]) {
+      holdTimes.push(now - keyPressTimes[e.code]);
+    }
+
+    // Flight Time 2
+    if (lastReleaseTime !== null) {
+      flightTimes2.push(now - lastReleaseTime);
+    }
+    lastReleaseTime = now;
+  });
+
+  async function submitTypingData() {
+    const duration = (performance.now() - startTime) / 1000; // in seconds
+    const pct_L = leftCount / totalKeys;
+    const pct_R = rightCount / totalKeys;
+    const pct_S = spaceCount / totalKeys;
+    const keys_per_sec = totalKeys / duration;
+
+    const payload = {
+      hold_times: holdTimes,
+      flight1: flightTimes1,
+      flight2: flightTimes2,
+      pct_L, pct_R, pct_S,
+      keys_per_sec
+    };
+
+    const response = await fetch("/typing-module", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    document.getElementById("resultBox").classList.remove("d-none");
+
+    if (result.prediction) {
+      let confidenceText = "";
+      if (result.confidence !== undefined && !isNaN(result.confidence)) {
+          confidenceText = ` (Confidence: ${(result.confidence * 100).toFixed(2)}%)`;
+      }
+      document.getElementById("result").textContent = 
+          "Result: " + result.prediction + confidenceText;
+    }
+  }
+</script>
+
+</body>
+</html>
